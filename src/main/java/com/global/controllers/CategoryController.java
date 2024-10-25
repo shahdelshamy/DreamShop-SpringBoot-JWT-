@@ -18,7 +18,7 @@ import com.global.response.ApiResponse;
 import com.global.service.category.CategoryService;
 
 @RestController
-@RequestMapping("${api.prefix}/category")
+@RequestMapping("/api/category")
 public class CategoryController {
 
 	@Autowired

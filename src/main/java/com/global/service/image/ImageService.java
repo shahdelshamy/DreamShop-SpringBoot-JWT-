@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.global.DTO.ImageDto;
+import com.global.DTO.ProductDto;
 import com.global.exceptions.ResourceNotFoundException;
 import com.global.models.Image;
 import com.global.models.Product;
@@ -32,6 +33,16 @@ public class ImageService implements ImageInterface {
 	public Image getImageById(int id) {
 		return imageRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("The Image Not Found"));
 	}
+	public List<ImageDto> getImageByProductId(int id) {
+		
+			List<ImageDto> images=imageRepository.findByProductId(id);
+			if(images.size()!=0) {
+				return images;
+			}else {
+				throw new ResourceNotFoundException("There Are No Images For This Product");
+			}
+
+	}
 
 	@Override
 	public void deleteImageById(int id) {
@@ -40,23 +51,25 @@ public class ImageService implements ImageInterface {
 
 	@Override
 	public List<ImageDto> saveImages(int productId, List<MultipartFile> files) throws SerialException, SQLException, IOException {
-		Product product=productService.getProductById(productId);
+		Product product=productService.findById(productId);
 		List<ImageDto>images=new ArrayList<>();
 		
 		for(MultipartFile file: files) {
 			Image image=new Image();
+			image.setProduct(product);
 			image.setFileName(file.getOriginalFilename());
 			image.setFileType(file.getContentType());
 			image.setImage(new SerialBlob(file.getBytes()));
-			String buildUrl ="api/v1/images/image/download/";
-			String url=buildUrl+image.getId();
+			String buildUrl ="/api/images/image/download/";
+			//String url=buildUrl+image.getId();
 			Image savedImage=imageRepository.save(image);
 			String originUrl=buildUrl+savedImage.getId();
+			savedImage.setDownloadUrl(originUrl);
 			imageRepository.save(savedImage);
 			
 			ImageDto imageDto=new ImageDto();
 			imageDto.setFileName(savedImage.getFileName());
-			imageDto.setDownloadUrlString(savedImage.getDownloadUrl());
+			imageDto.setDownloadUrl(savedImage.getDownloadUrl());
 			imageDto.setId(savedImage.getId());
 			
 			images.add(imageDto);
@@ -75,7 +88,7 @@ public class ImageService implements ImageInterface {
 		ImageDto imaegDto=new ImageDto();
 		imaegDto.setId(imageSaved.getId());
 		imaegDto.setFileName(imageSaved.getFileName());
-		imaegDto.setDownloadUrlString(imageSaved.getDownloadUrl());
+		imaegDto.setDownloadUrl(imageSaved.getDownloadUrl());
 		return imaegDto;
 	}
 

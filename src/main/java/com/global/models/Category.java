@@ -2,6 +2,8 @@ package com.global.models;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,6 +29,15 @@ public class Category {
 		this.name = name;
 	}
 
+
+	public Category() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+
+
+	@JsonIgnore
 	@OneToMany(mappedBy = "category")
 	private List<Product> product;
 

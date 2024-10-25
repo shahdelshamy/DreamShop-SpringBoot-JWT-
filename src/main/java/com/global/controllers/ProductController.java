@@ -3,6 +3,7 @@ package com.global.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +24,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.CONFLICT;;
 
 @RestController
-@RequestMapping("${api.prefix}/product")
+@RequestMapping("/api/product")
 public class ProductController {
 
 	
@@ -53,7 +54,16 @@ public class ProductController {
 			return ResponseEntity.ok(new ApiResponse("Sucess",productService.getAllProducts()));
 	}
 	
-	@GetMapping("/productsByName")
+	@GetMapping("/productsById/{id}")
+	public ResponseEntity<ApiResponse>getProductByName(@PathVariable int id){
+		try {
+			return ResponseEntity.ok(new ApiResponse("Sucess",productService.getProductById(id)));
+		} catch (ResourceNotFoundException e) {
+			return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(new ApiResponse("Failed",e.getMessage()));
+		}
+	}
+	
+	@GetMapping("/productsByName/{name}")
 	public ResponseEntity<ApiResponse>getProductByName(@PathVariable String name){
 		try {
 			return ResponseEntity.ok(new ApiResponse("Sucess",productService.getProductByName(name)));
@@ -62,7 +72,7 @@ public class ProductController {
 		}
 	}
 	
-	@GetMapping("/productsByCategory")
+	@GetMapping("/productsByCategory/{name}")
 	public ResponseEntity<ApiResponse>getProductByCategory(@PathVariable String name){
 		try {
 			return ResponseEntity.ok(new ApiResponse("Sucess",productService.getProductByCategory(name)));
@@ -71,7 +81,7 @@ public class ProductController {
 		}
 	}
 	
-	@GetMapping("/productsByBrand")
+	@GetMapping("/productsByBrand/{name}")
 	public ResponseEntity<ApiResponse>getProductByBrand(@PathVariable String name){
 		try {
 			return ResponseEntity.ok(new ApiResponse("Sucess",productService.getProductByBrand(name)));
@@ -103,14 +113,14 @@ public class ProductController {
 		return ResponseEntity.ok(new ApiResponse("Sucess",productService.countAllProducts()));
 	}
 	
-	@GetMapping("/productsCountByBrand")
+	@GetMapping("/productsCountByBrand/{brand}")
 	public ResponseEntity<ApiResponse>countProductByBrand(@PathVariable String brand){
 		return ResponseEntity.ok(new ApiResponse("Sucess",productService.coundProductByBrand(brand)));
 	}
 	
-	@GetMapping("/productsCountByCategory")
+	@GetMapping("/productsCountByCategory/{category}")
 	public ResponseEntity<ApiResponse>countProductByCategory(@PathVariable String category){
-		return ResponseEntity.ok(new ApiResponse("Sucess",productService.coundProductByBrand(category)));
+		return ResponseEntity.ok(new ApiResponse("Sucess",productService.coundProductByCategory(category)));
 	}
 	
 	@GetMapping("/productsCountByNameAndBrand")
@@ -118,6 +128,10 @@ public class ProductController {
 		return ResponseEntity.ok(new ApiResponse("Sucess",productService.coundProductByNameAndBrand(name, brand)));
 	}
 	
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<ApiResponse>deleteProduct(@PathVariable int id){
+		return ResponseEntity.ok(new ApiResponse("Deleting Sucess",null));
+	} 
 	
 	
 }

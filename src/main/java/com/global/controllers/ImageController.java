@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.global.DTO.ImageDto;
+import com.global.exceptions.ResourceNotFoundException;
 import com.global.models.Image;
 import com.global.response.ApiResponse;
 import com.global.service.image.ImageService;
@@ -33,7 +34,7 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
-@RequestMapping("${api.prefix}/images")
+@RequestMapping("/api/images")
 public class ImageController {
 
 	
@@ -75,6 +76,17 @@ public class ImageController {
 		 }else {
 			 return ResponseEntity.ok(new ApiResponse("Image Not Found!",null));
 		 }
+	 }
+	 
+	 @GetMapping("productId/{id}")
+	 public ResponseEntity<ApiResponse>findByProductId(@PathVariable int id){
+		 try {
+			 List<ImageDto> image=imageService.getImageByProductId(id);
+			 return ResponseEntity.ok(new ApiResponse("Success!",image));
+		} catch (ResourceNotFoundException e) {
+			return ResponseEntity.ok(new ApiResponse(e.getMessage(),null));
+		}
+		 
 	 }
 	 
 	 @DeleteMapping("/image/{imageId}")

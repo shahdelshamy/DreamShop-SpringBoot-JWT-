@@ -1,11 +1,16 @@
 package com.global.service.product;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.global.DTO.ImageDto;
+import com.global.DTO.ProductDto;
 import com.global.exceptions.ResourceNotFoundException;
 import com.global.models.Category;
 import com.global.models.Product;
@@ -68,72 +73,86 @@ public class ProductService implements ProductInterface {
 		 }
 	}
 	
-	@Override
-	public Product getProductById(int id) {
-		return productRepository.findById(id).orElseThrow(()->new ResourceNotFoundException("product not found"));
+	public Product findById(int id) {
+		return productRepository.findById(id).orElseThrow(
+				()->new ResourceNotFoundException("Product With This Id Not Found")
+				);
 	}
 	
 	@Override
-	public int deleteProductById(int id) {
-		return productRepository.deleteById(id);
+	public List<ProductDto> getProductById(int id) {
+		try {
+			List<Object[]> products= productRepository.getProductById(id);
+			return mapResults(products);
+			
+		} catch (ResourceNotFoundException e) {
+			throw new ResourceNotFoundException("Product With This Id Not Found");
+		}
+			
+	}
+	
+	@Override
+	public void deleteProductById(int id) {
+		 productRepository.deleteById(id);
 	}
 
 	@Override
-	public List<Product> getAllProducts() {
-		return productRepository.findAll();
+	public List<ProductDto> getAllProducts() {
+		List<Object[]> products= productRepository.finAllProducts();
+		return mapResults(products);
 	}
 
 	@Override
-	public List<Product> getProductByName(String name) {
-		List<Product> products=productRepository.findByName(name);
+	public List<ProductDto> getProductByName(String name) {
+		List<Object[]> products=productRepository.findByName(name);
 		if(products.size()==0) {
 			throw new ResourceNotFoundException("Not Found Products With This Name");
 		}else {
-			return products;
+			return mapResults(products);
 		}
 		
 		
 	}
 
 	@Override
-	public List<Product> getProductByCategory(String category) {
-		List<Product> products=productRepository.findByCategoryName(category);
+	public List<ProductDto> getProductByCategory(String category) {
+		List<Object[]> products=productRepository.findByCategoryName(category);
 		if(products.size()==0) {
 			throw new ResourceNotFoundException("Not Found Products With This Category");
 		}else {
-			return products;
+			return mapResults(products);
 		}
 	}
 
 	@Override
-	public List<Product> getProductByBrand(String brand) { 
+	public List<ProductDto> getProductByBrand(String brand) { 
 		
-			List<Product> products=productRepository.findByBrand(brand);
+			List<Object[]> products=productRepository.findByBrand(brand);
 			if(products.size()==0) {
 				throw new ResourceNotFoundException("Not Found Products With This Brand");
 			}else {
-				return products;
+				return mapResults(products);
 			}
 	}
 
 	@Override
-	public List<Product> getProductByCategoryAndBrand(String category, String brand) {
-		List<Product> products=productRepository.findByCategoryNameAndBrand(category,brand);
+	public List<ProductDto> getProductByCategoryAndBrand(String category, String brand) {
+		List<Object[]> products=productRepository.findByCategoryNameAndBrand(category,brand);
 		if(products.size()==0) {
 			throw new ResourceNotFoundException("Not Found Products With This Brand And Category");
 		}else {
-			return products;
+			 return mapResults(products);
 		}
 		
 	}
 
 	@Override
-	public List<Product> getProductByNameAndBrand(String name, String brand) {
-		List<Product> products=productRepository.findByNameAndBrand(name,brand);
+	public List<ProductDto> getProductByNameAndBrand(String name, String brand) {
+		List<Object[]> products=productRepository.findByNameAndBrand(name,brand);
 		if(products.size()==0) {
 			throw new ResourceNotFoundException("Not Found Products With This Brand And Name");
 		}else {
-			return products;
+			return mapResults(products);
 		}
 	}
 
@@ -155,6 +174,40 @@ public class ProductService implements ProductInterface {
 	@Override
 	public int coundProductByBrand(String brand) {
 		return productRepository.countByBrand(brand);
+	}
+	
+	public List<ProductDto> mapResults(List<Object[]> products){
+		
+		Map<Integer,ProductDto> productsMap=new HashMap<>();
+		
+		for (Object[] row : products) {
+	        Integer productId = (Integer) row[0];
+	        String productName = (String) row[1];
+	        String description = (String) row[2];
+	        String brand = (String) row[3];
+	        Float price = (Float) row[4];
+	        Integer quantity = (Integer) row[5];
+ 
+	        ImageDto imageDto = new ImageDto(
+	            (Integer) row[6],     
+	            (String) row[7],     
+	            (String) row[8]       
+	        );
+	        
+	        Category category = (Category) row[9];
+
+	        // Fetch or create ProductDto, then add image
+	        //If the productId already exists in the productsMap, the computeIfAbsent method will not create a new ProductDto instance; it will simply return the existing ProductDto mapped to that productId. The lambda expression (id -> /* ... */) will only be executed when productId is not already present in the productsMap.
+	        ProductDto productDto = productsMap.computeIfAbsent(productId, id -> 
+	            new ProductDto(id, productName, description, brand, price, quantity, new ArrayList<>(), category)
+	        );
+	        
+	        productDto.getImage().add(imageDto);	
+			
+		}
+		
+		return new ArrayList<>(productsMap.values());
+		
 	}
 
 

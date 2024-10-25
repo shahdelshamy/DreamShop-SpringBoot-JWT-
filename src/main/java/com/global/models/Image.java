@@ -2,6 +2,8 @@ package com.global.models;
 
 import java.sql.Blob;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,6 +30,7 @@ public class Image {
 	                      //Using a String to store binary data can cause issues with encoding and storage limits
 						  //All data converted to binary by Base64 encoded and images while have problem in decode beacase it contain special characters
 	
+	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "product_id")
 	private Product product;
